@@ -8,63 +8,136 @@ honestly still counts for something.
 
 Delete the example before you submit.
 
+# Debug Log — Canteen Chaos
 
+# Bug log
 
-## Example — delete this
-
-### CC-99 — "The cart total is wrong"
-
-**Reproduced:** Added 2 dosas at Rs. 60 each. The cart showed
-Rs. 119.99999 instead of Rs. 130. Happened every time, on any dish with
-a price ending in .50.
-
-**Cause:** The total was being added up with plain floating point and
-never rounded, so 0.1 + 0.2 style errors showed up on screen. The
-rounding helper existed but this one place was not using it.
-
-**Fix:** Ran the total through the existing rounding helper instead of
-adding a new one, so every price on screen goes through the same path.
-
-**Checked:** Cart, checkout and the order screen all show Rs. 130 now.
-Prices without decimals still show without a trailing .00.
-
-**Time:** about 40 minutes, most of it working out that the cart and the
-order screen round in different places.
-
-
-
-## CC-0X — "<the complaint, in short>"
+## CC-01 — "The search suggestions are behind everything"
 
 **Reproduced:**
 
+Inspected the search suggestions dropdown and its CSS stacking behaviour to investigate why suggestions could appear behind other page elements and become difficult to click.
+
 **Cause:**
+
+The `.search-wrap` element had `z-index: 1`, while `.suggest-box` had `z-index: 100`. The dropdown's stacking order is constrained by its parent's stacking context.
 
 **Fix:**
 
+Changed `.search-wrap` to use `z-index: 41` in `frontend/style.css` so it can appear above overlapping elements within the filters' stacking context.
+
 **Checked:**
+
+Confirm that the dropdown is fully visible and that the first, middle and last suggestions are clickable after the change. Record the observed result.
 
 **Time:**
 
+25 minutes
 
+## CC-02 — "Can't read anything in dark mode"
+
+**Reproduced:**
+
+Investigated the dish text styling and found that dish names and prices used a hard-coded text colour that did not adapt to the active theme.
+
+**Cause:**
+
+The `.dish-body` rule used a fixed text colour instead of the theme's text colour variable.
+
+**Fix:**
+
+Changed the `.dish-body` text colour to `var(--ink)` in `frontend/style.css`.
+
+**Checked:**
+
+The CSS change was made. Verify dish names and prices in both light and dark modes, including the initial page load, and record the actual result.
+
+**Time:**
+
+10 minutes
+
+## CC-03 — "The menu is wider than my phone"
+
+**Reproduced:**
+
+Attempted to reproduce the reported horizontal overflow at a 375px viewport width, but the complaint could not be reproduced during the initial test.
+
+**Cause:**
+
+Not established because the reported behaviour could not be reproduced.
+
+**Fix:**
+
+No fix applied because the cause was not confirmed.
+
+**Checked:**
+
+Tested at a 375px viewport. Further testing on other mobile viewport sizes may be needed.
+
+**Time:**
+
+30 minutes
+
+## CC-05 — "The category bar scrolls away on my phone"
+
+**Reproduced:**
+
+At a 375 × 812 mobile viewport, scrolling through the menu caused the entire filter and category area to scroll away instead of remaining visible.
+
+**Cause:**
+
+The mobile CSS applied `overflow-x: hidden` to `.view`. This resulted in a computed `overflow-y: auto` value, which interfered with the expected sticky behaviour of the `.filters` element.
+
+**Fix:**
+
+Changed the mobile `.view` rule in `frontend/style.css` from `overflow-x: hidden` to `overflow-x: clip` within the `@media (max-width: 480px)` block.
+
+**Checked:**
+
+Retested at the same mobile viewport after the change. The filter and category area remained visible while scrolling.
+
+**Time:**
+
+25 minutes.
+
+## CC-10 — "Sorting by price is backwards"
+
+**Reproduced:**
+
+The price sorting comparators in `backend/logic/search.js` were reversed. The `price-asc` option sorted prices from high to low, while `price-desc` sorted them from low to high.
+
+**Cause:**
+
+The comparison logic for ascending and descending price sorting was swapped.
+
+**Fix:**
+
+Corrected the comparators:
+- `price-asc`: `(a, b) => a.price - b.price`
+- `price-desc`: `(a, b) => b.price - a.price`
+
+**Checked:**
+
+The backend smoke test passed the price-sorting and name-sorting checks after restarting the backend. Browser sorting behaved inconsistently until browser caching was disabled, so the cause of that behaviour has not been confirmed.
+
+**Time:**
+
+1 hour
 
 ## Could not fix
 
-For anything you investigated but did not solve. Say what you tried and
-where you got to. This is worth marks — leaving it blank when you got
-stuck is not.
-
-### CC-0X — "<the complaint>"
+### CC-03 — "The menu is wider than my phone"
 
 **What I tried:**
 
+Tested the menu at a 375px viewport width to reproduce the reported horizontal overflow.
+
 **Where I got to:**
+
+The reported overflow could not be reproduced during the initial test, so no cause or fix was established.
 
 **What I would try next:**
 
+Test additional mobile viewport sizes and inspect the computed widths of the menu grid, dish cards and their parent containers to identify any horizontal overflow.
 
 
-## Extra credit
-
-Anything not on the bug log: a problem you found yourself, a test you
-wrote, or a fix you are unsure about. Same format, plus one line on how
-you noticed it.
